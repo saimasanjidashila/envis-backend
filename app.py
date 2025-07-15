@@ -6,7 +6,8 @@ import os
 import pandas as pd
 import geojson
 import xarray as xr
-import geojson
+from geojson import Feature, FeatureCollection, Point
+
 app = Flask(__name__)
 CORS(app)
 
@@ -142,11 +143,11 @@ def convert_to_geojson(df, lat_col, lon_col):
         lat = getattr(row, lat_col)
         lon = getattr(row, lon_col)
         props = row._asdict()
-        features.append(geojson.Feature(
-            geometry=geojson.Point((float(lon), float(lat))),
+        features.append(Feature(
+            geometry=Point((float(lon), float(lat))),
             properties=props
         ))
-    return geojson.FeatureCollection(features)
+    return FeatureCollection(features)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
