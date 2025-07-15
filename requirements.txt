@@ -8,3 +8,4 @@ netCDF4
 geopandas
 rasterio
 matplotlib
+geojson
