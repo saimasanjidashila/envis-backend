@@ -1,8 +1,11 @@
 Flask
+gunicorn
 flask-cors
-xarray
-rasterio
-geopandas
-numpy
 pandas
+numpy
+xarray
+netCDF4
+geopandas
+rasterio
 matplotlib
+
