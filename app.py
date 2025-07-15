@@ -1,17 +1,27 @@
 #!/usr/bin/env python3
-from flask import Flask, request, jsonify, send_file
+#!/usr/bin/env python3
+from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 import os
 import pandas as pd
 import geojson
 import xarray as xr
-from flask import send_from_directory
 
 app = Flask(__name__)
 CORS(app)
 
 UPLOAD_DIR = os.path.join(os.getcwd(), "uploads")
+DATA_DIR = os.path.join(os.getcwd(), "data")
+GEOJSON_DIR = os.path.join(os.getcwd(), "geojson")
+
+# Ensure all directories exist
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(GEOJSON_DIR, exist_ok=True)
+
+@app.route('/')
+def index():
+    return "EnVis backend is running!"
 
 @app.route("/upload", methods=["POST"])
 def upload_file():
@@ -24,28 +34,19 @@ def upload_file():
     uploaded_file.save(filepath)
 
     try:
-        # Just read headers (first line)
         columns = pd.read_csv(filepath, nrows=0).columns.tolist()
-
         print(f"File '{filename}' uploaded and saved. Columns: {columns}")
-
-        return jsonify({
-            "status": "File uploaded",
-            "columns": columns,
-            "filename": filename
-        })
+        return jsonify({"status": "File uploaded", "columns": columns, "filename": filename})
     except Exception as e:
         return jsonify({"error": f"Failed to process file: {str(e)}"}), 500
 
-    
 @app.route("/sst-preview")
 def serve_preview():
     return send_file("data/sst_preview.png", mimetype="image/png")
 
 @app.route("/geojson/<path:filename>")
 def serve_geojson(filename):
-    geojson_dir = os.path.join(os.getcwd(), "geojson")  # Adjust path if needed
-    return send_from_directory(geojson_dir, filename)
+    return send_from_directory(GEOJSON_DIR, filename)
 
 @app.route("/sst_today_overlay")
 def serve_sst_today_overlay():
@@ -76,6 +77,7 @@ def serve_dust_today_overlay():
 @app.route("/sst-tomorrow-preview")
 def serve_sst_tomorrow_preview():
     return send_file("data/predicted_sst_tomorrow.png", mimetype="image/png")
+
 @app.route("/predicted_sst_tomorrow_overlay")
 def serve_predicted_sst_tomorrow_overlay():
     return send_file("data/predicted_sst_tomorrow.png", mimetype="image/png")
@@ -121,11 +123,7 @@ def render_data():
 
         print(f"Generated GeoJSON with {len(df)} points.")
 
-        return jsonify({
-            "status": "GeoJSON generated",
-            "path": "/uploads/processed.geojson",
-            "variable": variable
-        })
+        return jsonify({"status": "GeoJSON generated", "path": "/uploads/processed.geojson", "variable": variable})
 
     except Exception as e:
         return jsonify({"error": f"Processing failed: {str(e)}"}), 500
