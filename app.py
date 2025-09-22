@@ -97,7 +97,9 @@ def render_data():
 
     try:
         df = pd.read_csv(filepath)
-         
+        df.columns = df.columns.str.lower()
+        variable = variable.lower()
+
 
         lat_col = next((c for c in ["lat", "latitude"] if c in df.columns), None)
         lon_col = next((c for c in ["lon", "longitude"] if c in df.columns), None)
